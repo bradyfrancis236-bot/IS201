@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Hangman Game</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background: #f4f4f4;
+    }
+
+    h1 {
+        margin-top: 20px;
+    }
+
+    #game-container {
+        margin-top: 20px;
+    }
+
+    #word {
+        font-size: 30px;
+        letter-spacing: 10px;
+        margin: 20px;
+    }
+
+    #wrong-letters {
+        color: red;
+    }
+
+    input {
+        padding: 10px;
+        font-size: 16px;
+        width: 50px;
+        text-align: center;
+    }
+
+    button {
+        padding: 10px 15px;
+        margin: 10px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    canvas {
+        background: white;
+        border: 2px solid black;
+        margin-top: 20px;
+    }
+</style>
+</head>
+<body>
+
+<h1>Hangman Game</h1>
+
+<div id="game-container">
+    <canvas id="hangmanCanvas" width="200" height="250"></canvas>
+
+    <div id="word"></div>
+
+    <p>Wrong Letters: <span id="wrong-letters"></span></p>
+
+    <input type="text" id="letter-input" maxlength="1" placeholder="A-Z">
+    <button onclick="guessLetter()">Guess</button>
+    <button onclick="resetGame()">Restart</button>
+
+    <p id="message"></p>
+</div>
+
+<script>
+const words = ["javascript", "hangman", "computer", "programming", "developer"];
+let selectedWord;
+let correctLetters;
+let wrongLetters;
+let mistakes;
+
+const canvas = document.getElementById("hangmanCanvas");
+const ctx = canvas.getContext("2d");
+
+function init() {
+    selectedWord = words[Math.floor(Math.random() * words.length)];
+    correctLetters = [];
+    wrongLetters = [];
+    mistakes = 0;
+    document.getElementById("message").textContent = "";
+    drawGallows();
+    displayWord();
+    updateWrongLetters();
+}
+
+function drawGallows() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx.beginPath();
+    ctx.moveTo(10, 230);
+    ctx.lineTo(150, 230);
+    ctx.moveTo(40, 230);
+    ctx.lineTo(40, 20);
+    ctx.lineTo(120, 20);
+    ctx.lineTo(120, 50);
+    ctx.stroke();
+}
+
+function drawHangman() {
+    switch (mistakes) {
+        case 1: // head
+            ctx.beginPath();
+            ctx.arc(120, 70, 20, 0, Math.PI * 2);
+            ctx.stroke();
+            break;
+        case 2: // body
+            ctx.beginPath();
+            ctx.moveTo(120, 90);
+            ctx.lineTo(120, 150);
+            ctx.stroke();
+            break;
+        case 3: // left arm
+            ctx.beginPath();
+            ctx.moveTo(120, 110);
+            ctx.lineTo(90, 130);
+            ctx.stroke();
+            break;
+        case 4: // right arm
+            ctx.beginPath();
+            ctx.moveTo(120, 110);
+            ctx.lineTo(150, 130);
+            ctx.stroke();
+            break;
+        case 5: // left leg
+            ctx.beginPath();
+            ctx.moveTo(120, 150);
+            ctx.lineTo(90, 190);
+            ctx.stroke();
+            break;
+        case 6: // right leg
+            ctx.beginPath();
+            ctx.moveTo(120, 150);
+            ctx.lineTo(150, 190);
+            ctx.stroke();
+            break;
+    }
+}
+
+function displayWord() {
+    const wordDisplay = selectedWord
+        .split("")
+        .map(letter => (correctLetters.includes(letter) ? letter : "_"))
+        .join(" ");
+
+    document.getElementById("word").textContent = wordDisplay;
+
+    if (!wordDisplay.includes("_")) {
+        document.getElementById("message").textContent = "🎉 You Win!";
+    }
+}
+
+function updateWrongLetters() {
+    document.getElementById("wrong-letters").textContent = wrongLetters.join(", ");
+}
+
+function guessLetter() {
+    const input = document.getElementById("letter-input");
+    const letter = input.value.toLowerCase();
+    input.value = "";
+
+    if (!letter.match(/^[a-z]$/)) {
+        alert("Please enter a valid letter (A-Z)");
+        return;
+    }
+
+    if (correctLetters.includes(letter) || wrongLetters.includes(letter)) {
+        alert("You already guessed that letter!");
+        return;
+    }
+
+    if (selectedWord.includes(letter)) {
+        correctLetters.push(letter);
+    } else {
+        wrongLetters.push(letter);
+        mistakes++;
+        drawHangman();
+    }
+
+    displayWord();
+    updateWrongLetters();
+
+    if (mistakes === 6) {
+        document.getElementById("message").textContent =
+            "💀 You Lost! The word was: " + selectedWord;
+    }
+}
+
+function resetGame() {
+    init();
+}
+
+init();
+</script>
+
+</body>
+</html>
